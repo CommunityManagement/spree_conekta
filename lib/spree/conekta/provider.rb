@@ -68,10 +68,13 @@ module Spree::Conekta
     end
 
     def details(gateway_params)
+      order = Spree::Order.find_by_number(gateway_params[:order_id].split('-').first)
+      name = gateway_params[:billing_address][:name] if gateway_params[:billing_address].present?
+      phone = gateway_params[:billing_address][:phone] if gateway_params[:billing_address].present?
       {
-        'name'            => gateway_params[:billing_address][:name],
+        'name'            => name || order.user.try(:name),
         'email'           => gateway_params[:email],
-        'phone'           => gateway_params[:billing_address][:phone],
+        'phone'           => phone || order.user.try(:mobile_phone),
         'billing_address' => billing_address(gateway_params),
         'line_items'      => line_items(gateway_params),
         'shipment'        => shipment(gateway_params)
@@ -98,7 +101,7 @@ module Spree::Conekta
         'state'   => gateway_params[:billing_address][:state],
         'country' => gateway_params[:billing_address][:country],
         'zip'     => gateway_params[:billing_address][:zip]
-      }
+      } if gateway_params[:billing_address].present?
     end
 
     def line_items(gateway_params)
@@ -109,7 +112,7 @@ module Spree::Conekta
     def shipment(gateway_params)
       order = Spree::Order.find_by_number(gateway_params[:order_id].split('-').first)
       shipment = order.shipments[0]
-      carrier = (shipment.present? ? shipment.shipping_method.name : "other")
+      carrier = (shipment.present? ? shipment.try(:shipping_method).try(:name) : "other")
       traking_id = (shipment.present? ? shipment.tracking : nil)
       {
         'price'   => gateway_params[:shipping],

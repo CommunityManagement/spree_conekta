@@ -13,6 +13,7 @@ module Spree::Conekta::PaymentSource
     end
 
     def installments_number(source)
+      # TODO fix the logic with installments_number
       [3,6,9,12].include?(source.installments_number) ? source.installments_number : nil
     end
 
