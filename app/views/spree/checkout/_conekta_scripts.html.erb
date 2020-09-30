@@ -36,6 +36,7 @@
                 }
 
                 processPayment(form) {
+                    this.form.find(".js-card-errors").text('');
                     return this.generateToken(form);
                 }
 
@@ -72,8 +73,10 @@
                 }
 
                 errorResponseHandler(response) {
-                    this.saveConektaResponse(response);
-                    return this.submitForm();
+                    this.form.find(".js-card-errors").text(response.message_to_purchaser);
+                    Spree.enableSave();
+                    // this.saveConektaResponse(response);
+                    // return this.submitForm();
                 }
 
                 saveConektaResponse(response) {
