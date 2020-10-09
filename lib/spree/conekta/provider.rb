@@ -82,6 +82,7 @@ module Spree::Conekta
     end
 
     def shipping_address(gateway_params)
+      return {} if gateway_params[:shipping_address].blank?
       {
         'street1' => gateway_params[:shipping_address][:address1],
         'street2' => gateway_params[:shipping_address][:address2],
