@@ -69,12 +69,14 @@ module Spree::Conekta
 
     def details(gateway_params)
       order = Spree::Order.find_by_number(gateway_params[:order_id].split('-').first)
-      name = gateway_params[:billing_address][:name] if gateway_params[:billing_address].present?
-      phone = gateway_params[:billing_address][:phone] if gateway_params[:billing_address].present?
+      name = gateway_params[:shipping_address][:name] if gateway_params[:shipping_address].present?
+      name = (gateway_params[:billing_address][:name].presence || name) if gateway_params[:billing_address].present?
+      phone = gateway_params[:shipping_address][:phone] if gateway_params[:shipping_address].present?
+      phone = (gateway_params[:billing_address][:phone].presence || phone) if gateway_params[:billing_address].present?
       {
-        'name'            => name || order.user.try(:name),
+        'name'            => order.user.try(:name) || name,
         'email'           => gateway_params[:email],
-        'phone'           => phone || order.user.try(:mobile_phone),
+        'phone'           => phone || order.user.try(:mobile_phone) || Spree::Store.current.phone || Spree::Store.current.mobile_phone,
         'billing_address' => billing_address(gateway_params),
         'line_items'      => line_items(gateway_params),
         'shipment'        => shipment(gateway_params)
